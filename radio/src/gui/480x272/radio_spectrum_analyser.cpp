@@ -56,7 +56,7 @@ bool menuRadioSpectrumAnalyser(event_t event)
     if (isModulePXX2(g_moduleIdx))
       moduleState[g_moduleIdx].readModuleInformation(&reusableBuffer.moduleSetup.pxx2.moduleInformation, PXX2_HW_INFO_TX_ID, PXX2_HW_INFO_TX_ID);
     else if (isModuleMultimodule((g_moduleIdx)))
-      moduleState[g_moduleIdx].mode = MODULE_MODE_NORMAL;
+      memcpy(&g_model.moduleData[g_moduleIdx], &reusableBuffer.spectrumAnalyser.previousModuleData, sizeof(ModuleData));
     /* wait 1s to resume normal operation before leaving */
     watchdogSuspend(1000);
     RTOS_WAIT_MS(1000);
@@ -98,6 +98,11 @@ bool menuRadioSpectrumAnalyser(event_t event)
     reusableBuffer.spectrumAnalyser.track = reusableBuffer.spectrumAnalyser.freq;
     reusableBuffer.spectrumAnalyser.step = reusableBuffer.spectrumAnalyser.span / LCD_W;
     reusableBuffer.spectrumAnalyser.dirty = true;
+    memcpy(&reusableBuffer.spectrumAnalyser.previousModuleData, &g_model.moduleData[g_moduleIdx], sizeof(ModuleData));
+#if defined(INTERNAL_MODULE_MULTI)
+    if(g_moduleIdx == INTERNAL_MODULE)
+      setModuleType(INTERNAL_MODULE, MODULE_TYPE_MULTIMODULE);
+#endif
     moduleState[g_moduleIdx].mode = MODULE_MODE_SPECTRUM_ANALYSER;
   }
 
